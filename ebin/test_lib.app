@@ -1,0 +1,11 @@
+{application,test_lib,
+             [{description,"An OTP application"},
+              {vsn,"0.1.0"},
+              {registered,[]},
+              {mod,{test_lib_app,[]}},
+              {applications,[kernel,stdlib]},
+              {env,[]},
+              {modules,[local,ssh_nodes,test_lib,test_lib_app,test_lib_sup,
+                        test_misc]},
+              {licenses,["Apache 2.0"]},
+              {links,[]}]}.
