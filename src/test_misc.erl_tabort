@@ -35,22 +35,11 @@ load_start_basic(HostName,NodeName,NodeDir,Cookie)->
     timer:sleep(2000),
     PaArgs=" ",
     EnvArgs=" ",
-    Reply=case create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs) of
-	      {error,Reason}->
-		  {error,[Reason,?MODULE,?FUNCTION_NAME,?LINE]};
-	      {ok,Node}->
-		  Ping=[{error,[not_connected,Node,AppId]}||AppId<-?BasicAppls,
-							    pong/=rpc:call(Node,list_to_atom(AppId),ping,[])],
-		  case Ping of
-		      []->
-			  {ok,Node,Cookie};
-		      ErrorList->
-			  {error,[ErrorList,?MODULE,?FUNCTION_NAME,?LINE]}
-		  end
-	  end,
- 
-    io:format("Load_start Result ~p~n",[{Reply,?MODULE,?FUNCTION_NAME,?LINE}]),
-    Reply.
+    {ok,Node}=create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs),
+    pong=rpc:call(Node,common,ping,[]),
+    pong=rpc:call(Node,sd,ping,[]),
+    pong=rpc:call(Node,nodelog,ping,[]),
+    {ok,Node,Cookie}.
 
 
 %% --------------------------------------------------------------------
@@ -115,50 +104,46 @@ create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs)->
 %% --------------------------------------------------------------------
 git_load_start(Node,Appl,NodeDir)->
     DirToClone=filename:join(NodeDir,Appl),
-%    io:format("DirToClone ~p~n",[{DirToClone,?MODULE,?FUNCTION_NAME,?LINE}]),
+    io:format("DirToClone ~p~n",[{DirToClone,?MODULE,?FUNCTION_NAME,?LINE}]),
     GitPath=config:application_gitpath(Appl++".spec"),
     App=list_to_atom(Appl),
     Paths=[filename:join([NodeDir,Appl,"ebin"])],    
+
     Reply=case rpc:call(Node,os,cmd,["rm -rf "++DirToClone]) of
 	      []->
 		  case rpc:call(Node,file,make_dir,[DirToClone]) of
-		      {error,Reason}->
-			  {error,[Reason,?MODULE,?FUNCTION_NAME,?LINE]};
-		      {badrpc,Reason}->
-			  {error,[badrpc,Reason,?MODULE,?FUNCTION_NAME,?LINE]};
 		      ok->
 			  case rpc:call(Node,filelib,is_dir,[DirToClone]) of
-			      {badrpc,Reason}->
-				  {error,[badrpc,Reason,?MODULE,?FUNCTION_NAME,?LINE]};
-			      false->
-				  {error,[DirToClone,eexists,"couldnt git clone application:",
-					  App," GitPath:",GitPath," DirToClone:",DirToClone," on Node:",Node,?MODULE,?LINE]};
 			      true->
 				  case appl:git_clone_to_dir(Node,GitPath,DirToClone) of
-				      {error,Reason}->
-					  {error,[Reason,?MODULE,?FUNCTION_NAME,?LINE]};
 				      {ok,_}->
 					  case appl:load(Node,App,Paths) of
-					      {error,Reason}->
-						  {error,[Reason,?MODULE,?FUNCTION_NAME,?LINE]};
 					      ok->
 						  case appl:start(Node,App) of
-						      {error,Reason}->
-							  {error,[Reason,?MODULE,?FUNCTION_NAME,?LINE]};
 						      ok->
 							  case rpc:call(Node,App,ping,[]) of
 							      pong->
 								  {ok,Node,Appl,DirToClone};
 							      pang->
 								  {error,[pang,"couldnt connect to Node",Node,?MODULE,?LINE]}
-							  end
-						  end
-					  end
-				  end
-			  end
+							  end;
+						      Reason->
+							  {error,[Reason,"couldnt start application:",App," on Node:",Node,?MODULE,?LINE]}
+						  end;
+					      Reason->
+						  {error,[Reason,"couldnt load application:",App," on Node:",Node,?MODULE,?LINE]}
+					  end;
+				      Reason->
+					  {error,[Reason,"couldnt git clone application:",App," GitPath:",GitPath," DirToClone:",DirToClone," on Node:",Node,?MODULE,?LINE]}
+				  end;
+			      false->
+				  {error,[DirToClone,eexists,"couldnt git clone application:",App," GitPath:",GitPath," DirToClone:",DirToClone," on Node:",Node,?MODULE,?LINE]}
+			  end;
+		      Reason->
+			  {error,[Reason,"couldnt make DirToClone when git clone application:",App," GitPath:",GitPath," DirToClone:",DirToClone," on Node:",Node,?MODULE,?LINE]}
 		  end;
-	      ReasonRmGitCloneDirFailed->
-		  {error,[ReasonRmGitCloneDirFailed,?MODULE,?FUNCTION_NAME,?LINE]}
+	      Reason->
+		  {error,[Reason,"couldnt rm DirToClone when git clone application:",App," GitPath:",GitPath," DirToClone:",DirToClone," on Node:",Node,?MODULE,?LINE]}
 	  end,
     Reply.
 

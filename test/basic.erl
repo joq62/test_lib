@@ -2,14 +2,14 @@
 %%% @author  : Joq Erlang
 %%% @doc: : 
 %%% Created :
-%%% Node end point  
+%%% Node end point   
 %%% Creates and deletes Pods
 %%% 
 %%% API-kube: Interface 
 %%% Pod consits beams from all services, app and app and sup erl.
 %%% The setup of envs is
 %%% -------------------------------------------------------------------
--module(basic_eunit).   
+-module(basic).   
  
 -export([start/0]).
 %% --------------------------------------------------------------------
@@ -78,7 +78,8 @@ single_test()->
 single_cookie_test()->
     LoadStartArgs=[{HostName,NodeName,NodeDir,Cookie}||HostName<-?HostNames,
 							      {NodeName,NodeDir,Cookie}<-?NodeNameNodeDirCookie],  
-    Result=[load_start(LoadStartArg)||LoadStartArg<-LoadStartArgs],
+  %  Result=[load_start(LoadStartArg)||LoadStartArg<-LoadStartArgs],
+    Result=[test_lib:load_start_basic(LoadStartArg)||LoadStartArg<-LoadStartArgs],
     io:format("DBG: Result ~p~n",[{?MODULE,?FUNCTION_NAME}]),
     
     io:format("TEST OK! ~p~n",[{Result,?MODULE,?FUNCTION_NAME}]),

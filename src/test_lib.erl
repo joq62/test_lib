@@ -19,6 +19,7 @@
 
 %% External exports
 -export([
+	 load_start_basic/1,
 	 create_basic_appls/3,
 	 create_basic_appls/6
 	]).
@@ -50,6 +51,10 @@ appl_start([])->
 %% call
 start()-> gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 stop()-> gen_server:call(?MODULE, {stop},infinity).
+
+
+load_start_basic({HostName,NodeName,NodeDir,Cookie})->
+    gen_server:call(?MODULE,{load_start_basic,{HostName,NodeName,NodeDir,Cookie}},infinity).
 
 create_basic_appls(HostName,NodeName,NodeDir)->
     gen_server:call(?MODULE,{create_basic_appls,HostName,NodeName,NodeDir},infinity).
@@ -89,6 +94,10 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 
+
+handle_call({load_start_basic,{HostName,NodeName,NodeDir,Cookie}},_From, State) ->
+    Reply=test_misc:load_start_basic(HostName,NodeName,NodeDir,Cookie),
+    {reply, Reply, State};
 
 handle_call({create_basic_appls,HostName,NodeName,NodeDir},_From, State) ->
     Reply=test_misc:create_basic_appls(HostName,NodeName,NodeDir),
