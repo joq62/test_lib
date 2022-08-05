@@ -40,4 +40,5 @@ eunit:
 	cp _build/default/lib/*/ebin/* ebin;
 	erlc -I include -o test_ebin test/*.erl;
 	erl -pa ebin -pa test_ebin\
-	    -sname db_test -run $(m) start -setcookie cookie_test
+	    -sname db_test -run $(m) start -setcookie cookie_test\
+	    -hidden

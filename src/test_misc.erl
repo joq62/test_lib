@@ -18,14 +18,19 @@
 %-compile(export_all).
 
 -export([
-	 create_basic_appls/3
-	 
+	 create_basic_appls/3,
+	 create_basic_appls/6
 	 ]).
 -define(BasicAppls,["common","sd","nodelog"]).
 %% ====================================================================
 %% External functions
 %% ====================================================================
 
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% --------------------------------------------------------------------
 create_basic_appls(HostName,NodeName,NodeDir)->
     Ip=config:host_local_ip(HostName),
     Port=config:host_ssh_port(HostName),
@@ -49,7 +54,38 @@ create_basic_appls(HostName,NodeName,NodeDir)->
 	  end,
     Reply.
 
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% --------------------------------------------------------------------
+create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs)->
+    Ip=config:host_local_ip(HostName),
+    Port=config:host_ssh_port(HostName),
+    Uid=config:host_uid(HostName),
+    Passwd=config:host_passwd(HostName),
+    TimeOut=7000,
+    Reply=case ssh_vm:create_dir(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs,
+				 {Ip,Port,Uid,Passwd,TimeOut}) of
+	       {error,Reason}->
+		   {error,Reason};
+	       {ok,Node}->
+		  GitLoadStart=[git_load_start(Node,Appl,NodeDir)||Appl<-?BasicAppls],
+		   CheckGitLoadStart=[{error,Reason}||{error,Reason}<-GitLoadStart],
+		   case CheckGitLoadStart of
+		       []->
+			   {ok,Node};
+		       Reason ->
+			   {error,Reason}
+		   end
+	  end,
+    Reply.
 
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% --------------------------------------------------------------------
 git_load_start(Node,Appl,NodeDir)->
     DirToClone=filename:join(NodeDir,Appl),
     io:format("DirToClone ~p~n",[{DirToClone,?MODULE,?FUNCTION_NAME,?LINE}]),
@@ -101,10 +137,4 @@ git_load_start(Node,Appl,NodeDir)->
 %% Returns: non
 %% --------------------------------------------------------------------
 
-
-%% --------------------------------------------------------------------
-%% Function:start/0 
-%% Description: Initiate the eunit tests, set upp needed processes etc
-%% Returns: non
-%% --------------------------------------------------------------------
 

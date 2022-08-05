@@ -19,7 +19,8 @@
 
 %% External exports
 -export([
-	 create_basic_appls/3
+	 create_basic_appls/3,
+	 create_basic_appls/6
 	]).
 
 -export([
@@ -52,6 +53,8 @@ stop()-> gen_server:call(?MODULE, {stop},infinity).
 
 create_basic_appls(HostName,NodeName,NodeDir)->
     gen_server:call(?MODULE,{create_basic_appls,HostName,NodeName,NodeDir},infinity).
+create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs)->
+    gen_server:call(?MODULE,{create_basic_appls,HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs},infinity).
 
 ping()->
     gen_server:call(?MODULE,{ping},infinity).
@@ -89,6 +92,9 @@ init([]) ->
 
 handle_call({create_basic_appls,HostName,NodeName,NodeDir},_From, State) ->
     Reply=test_misc:create_basic_appls(HostName,NodeName,NodeDir),
+    {reply, Reply, State};
+handle_call({create_basic_appls,HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs},_From, State) ->
+    Reply=test_misc:create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs),
     {reply, Reply, State};
 
 handle_call({ping},_From, State) ->
