@@ -40,7 +40,8 @@ eunit:
 	cp _build/default/lib/*/ebin/* ebin;
 	erlc -I include -o test_ebin test/*.erl;
 	erl -pa ebin -pa test_ebin\
-	    -pa /home/joq62/erlang/infra_2/common/ebin\
+	    -pa /home/joq62/erlang/infra_2/pod/ebin\
+            -pa /home/joq62/erlang/infra_2/common/ebin\
 	    -pa /home/joq62/erlang/infra_2/sd/ebin\
 	    -pa /home/joq62/erlang/infra_2/nodelog/ebin\
 	    -pa /home/joq62/erlang/infra_2/config/ebin\

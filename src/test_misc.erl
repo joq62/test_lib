@@ -22,7 +22,8 @@
 	 create_basic_appls/3,
 	 create_basic_appls/6
 	 ]).
--define(BasicAppls,["common","sd","nodelog"]).
+%-define(BasicAppls,["common","sd","nodelog"]).
+-define(BasicAppls,["pod"]).
 %% ====================================================================
 %% External functions
 %% ====================================================================
@@ -65,7 +66,10 @@ create_basic_appls(HostName,NodeName,NodeDir)->
     Passwd=config:host_passwd(HostName),
     TimeOut=7000,
 
-    Reply=case ssh_vm:create_dir(HostName,NodeName,NodeDir,
+    ssh_vm:delete_dir(HostName,NodeDir),
+    {ok,NodeDir}=ssh_vm:create_dir(HostName,NodeDir),
+
+    Reply=case ssh_vm:create(HostName,NodeName,
 			 {Ip,Port,Uid,Passwd,TimeOut}) of
 	       {error,Reason}->
 		   {error,Reason};
@@ -92,7 +96,11 @@ create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs)->
     Uid=config:host_uid(HostName),
     Passwd=config:host_passwd(HostName),
     TimeOut=7000,
-    Reply=case ssh_vm:create_dir(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs,
+    
+    ssh_vm:delete_dir(HostName,NodeDir),
+    {ok,NodeDir}=ssh_vm:create_dir(HostName,NodeDir),
+    
+    Reply=case ssh_vm:create(HostName,NodeName,Cookie,PaArgs,EnvArgs,
 				 {Ip,Port,Uid,Passwd,TimeOut}) of
 	       {error,Reason}->
 		   {error,Reason};

@@ -53,6 +53,7 @@ single_test()->
     NodeDir="first_test.dir",
     {ok,Node}=test_lib:create_basic_appls(HostName,NodeName,NodeDir),
   
+    pong=rpc:call(Node,pod,ping,[]),
     pong=rpc:call(Node,common,ping,[]),
     pong=rpc:call(Node,sd,ping,[]),
     pong=rpc:call(Node,nodelog,ping,[]),
@@ -93,7 +94,8 @@ load_start({HostName,NodeName,NodeDir,Cookie})->
     PaArgs=" ",
     EnvArgs=" ",
     {ok,Node}=test_lib:create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs),
-  
+   
+    pong=rpc:call(Node,pod,ping,[]),
     pong=rpc:call(Node,common,ping,[]),
     pong=rpc:call(Node,sd,ping,[]),
     pong=rpc:call(Node,nodelog,ping,[]),
@@ -125,6 +127,7 @@ map_load_start(Pid,{HostName,NodeName,NodeDir,Cookie})->
     EnvArgs=" ",
     {ok,Node}=test_lib:create_basic_appls(HostName,NodeName,NodeDir,Cookie,PaArgs,EnvArgs),
   
+    pong=rpc:call(Node,pod,ping,[]),
     pong=rpc:call(Node,common,ping,[]),
     pong=rpc:call(Node,sd,ping,[]),
     pong=rpc:call(Node,nodelog,ping,[]),
